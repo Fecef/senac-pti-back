@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal, engine
 from models import Base, Cliente, Compra, Historico
-from schemas import ClienteCreate, ClienteOut, ClienteUpdate, CompraCreate, Sugestao
+from schemas import (
+    ClienteCreate,
+    ClienteDetailOut,
+    ClienteOut,
+    ClienteUpdate,
+    CompraCreate,
+)
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -53,16 +59,38 @@ def deletar_cliente(cpf: str, db: Session = Depends(get_db)):
 
     return cliente
 
-@app.get("/clientes/{cpf}/", response_model=ClienteOut)
+@app.get("/clientes/{cpf}/", response_model=ClienteDetailOut)
 def detalhe_cliente(cpf: str, db: Session = Depends(get_db)):
     cliente = db.query(Cliente).filter(Cliente.cpf == cpf).first()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente nao encontrado")
+    
     return cliente
 
 @app.get("/clientes/", response_model=List[ClienteOut])
 def listar_clientes(db: Session = Depends(get_db)):
-    return db.query(Cliente).all()
+    clientes = db.query(Cliente).all()
+    resposta = []
+
+    for cliente in clientes:
+        datas = [
+            hist.comprado_em
+            for compra in cliente.compras
+            for hist in compra.historico
+        ]
+
+        ultima_data = max(datas) if datas else None
+
+        resposta.append(
+            ClienteOut(
+                id=cliente.id,
+                cpf=cliente.cpf,
+                telefone=cliente.telefone,
+                ultima_compra=ultima_data,
+            )
+        )
+
+    return resposta
 
 @app.post("/compras/")
 def registrar_compra(dados_compra: CompraCreate, db: Session = Depends(get_db)):

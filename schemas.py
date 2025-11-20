@@ -39,11 +39,21 @@ class ClienteUpdate(BaseModel):
         orm_mode = True
 
 
-class ClienteOut(BaseModel):
+class ClienteDetailOut(BaseModel):
     id: int
     cpf: str
     telefone: str
     compras: List[CompraOut] = []
+
+    class Config:
+        orm_mode = True
+
+
+class ClienteOut(BaseModel):
+    id: int
+    cpf: str
+    telefone: str
+    ultima_compra: Optional[date] = None
 
     class Config:
         orm_mode = True

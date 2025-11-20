@@ -9,9 +9,7 @@ class Cliente(Base):
     id = Column(Integer, primary_key=True, index=True)
     cpf = Column(String, unique=True, index=True)
     telefone = Column(String)
-    compras = relationship(
-        "Compra", back_populates="cliente", order_by="Compra.total_comprado.desc()"
-    )
+    compras = relationship("Compra", back_populates="cliente", order_by="Compra.total_comprado.desc()")
 
 
 class Compra(Base):
@@ -21,7 +19,7 @@ class Compra(Base):
     produto = Column(String)
     total_comprado = Column(Integer, default=1)
     cliente = relationship("Cliente", back_populates="compras")
-    historico = relationship("Historico", back_populates="compra")
+    historico = relationship("Historico", back_populates="compra", order_by="Historico.comprado_em.desc()")
 
 
 class Historico(Base):
