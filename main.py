@@ -3,7 +3,7 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-
+from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal, engine
 from models import Base, Cliente, Compra, Historico
 from schemas import (
@@ -16,6 +16,21 @@ from schemas import (
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:8080",
+    "*"  
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
 
 def get_db():
     db = SessionLocal()
