@@ -109,13 +109,13 @@ def listar_clientes(db: Session = Depends(get_db)):
 
 @app.post("/compras/")
 def registrar_compra(dados_compra: CompraCreate, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).filter(Cliente.id == dados_compra.cliente_id).first()
+    cliente = db.query(Cliente).filter(Cliente.cpf == dados_compra.client_cpf).first()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     
     nome_base_produto = dados_compra.produto.split()[0]
-    compra = db.query(Compra).filter(Compra.cliente_id == dados_compra.cliente_id, Compra.produto.ilike(f"%{nome_base_produto}%")).first()
-    compra = compra or Compra(cliente_id=dados_compra.cliente_id, produto=nome_base_produto)
+    compra = db.query(Compra).filter(Compra.cliente_id == cliente.id, Compra.produto.ilike(f"%{nome_base_produto}%")).first()
+    compra = compra or Compra(client_cpf=cliente.cpf, produto=nome_base_produto)
     compra.total_comprado = (compra.total_comprado or 0)+1
     Historico(comprado_em=datetime.now().date(), compra=compra)
         

@@ -12,7 +12,7 @@ class HistoricoOut(BaseModel):
 
 
 class CompraCreate(BaseModel):
-    cliente_id: int
+    client_cpf: str
     produto: str
 
 
