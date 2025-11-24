@@ -4,6 +4,7 @@ from database import SessionLocal, engine
 from models import Base, Cliente, Compra
 from schemas import ClienteCreate, ClienteOut, CompraCreate, Sugestao
 from utils import enviar_notificacao
+from typing import List
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
