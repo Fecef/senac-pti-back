@@ -109,20 +109,22 @@ def listar_clientes(db: Session = Depends(get_db)):
 
 @app.post("/compras/")
 def registrar_compra(dados_compra: CompraCreate, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).filter(Cliente.cpf == dados_compra.client_cpf).first()
+    cliente = db.query(Cliente).filter(Cliente.cpf == dados_compra.cliente_cpf).first()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     
-    nome_base_produto = dados_compra.produto.split()[0]
-    compra = db.query(Compra).filter(Compra.cliente_id == cliente.id, Compra.produto.ilike(f"%{nome_base_produto}%")).first()
-    compra = compra or Compra(client_cpf=cliente.cpf, produto=nome_base_produto)
-    compra.total_comprado = (compra.total_comprado or 0)+1
-    Historico(comprado_em=datetime.now().date(), compra=compra)
-        
-    db.add(compra)
-    db.commit()
-    db.refresh(compra)
-    return compra
+    for produto in dados_compra.produtos:
+        nome_base_produto = produto.split()[0]
+        compra = db.query(Compra).filter(Compra.cliente_id == cliente.id, Compra.produto.ilike(f"%{nome_base_produto}%")).first()
+        compra = compra or Compra(cliente_id=cliente.id, produto=nome_base_produto)
+        compra.total_comprado = (compra.total_comprado or 0)+1
+        Historico(comprado_em=datetime.now().date(), compra=compra)
+        db.add(compra)
+        db.commit()
+        db.refresh(compra)
+
+    compras_cliente =  db.query(Compra).filter(Compra.cliente_id == cliente.id, Compra.produto.in_(dados_compra.produtos)).all()
+    return compras_cliente
 
 @app.get("/clientes/{cpf}/compras/ranking", response_model=ClienteOut)
 def ranking_compras_por_cliente(cpf: str, db: Session = Depends(get_db)):

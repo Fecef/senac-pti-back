@@ -12,8 +12,8 @@ class HistoricoOut(BaseModel):
 
 
 class CompraCreate(BaseModel):
-    client_cpf: str
-    produto: str
+    cliente_cpf: str
+    produtos: List[str]
 
 
 class CompraOut(BaseModel):
